@@ -10,8 +10,7 @@ function interp1(xs, ys, x)                      # linear interpolation, xs asce
 end
 
 # Add wall values so Ghia points at y,x = 0 and 1 are inside the interpolation range.
-profiles(s) = (ys = [0.0; s.yu; 1.0], us = [0.0; s.u_cl; 1.0],
-               xs = [0.0; s.xv; 1.0], vs = [0.0; s.v_cl; 0.0])
+profiles(s) = (ys = [0.0; s.yu; 1.0], us = [0.0; s.u_cl; 1.0], xs = [0.0; s.xv; 1.0], vs = [0.0; s.v_cl; 0.0])
 
 function compare(Re::Int, Ns; scheme = Central())
     gu = CSV.read(joinpath(DATA, "ghia_re$(Re)_u.csv"), DataFrame)   # columns: y,u
@@ -33,8 +32,7 @@ function compare(Re::Int, Ns; scheme = Central())
     scatter!(pl1, gu.u, gu.y, label = "Ghia et al. (1982)")
     pl2 = plot(p.xs, p.vs, label = "N=$Nf", xlabel = "x", ylabel = "v", title = "v at y=0.5")
     scatter!(pl2, gv.x, gv.v, label = "Ghia et al. (1982)")
-    savefig(plot(pl1, pl2, layout = (1, 2), size = (900, 400)),
-            joinpath(OUT, "ghia_re$(Re).png"))
+    savefig(plot(pl1, pl2, layout = (1, 2), size = (900, 400)), joinpath(OUT, "ghia_re$(Re).png"))
 end
 
 compare(100, [16, 32, 64, 128])

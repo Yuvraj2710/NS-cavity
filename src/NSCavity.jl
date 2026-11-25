@@ -1,5 +1,6 @@
 module NSCavity
-
+export ConvectionScheme, Central, Blend
+export TimeScheme, Euler, AB2
 using LinearAlgebra
 
 include("grid.jl")
