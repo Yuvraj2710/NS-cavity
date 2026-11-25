@@ -13,8 +13,7 @@ function self_convergence(Re; Ns = [16, 32, 64], Nref = 128)
     hs = 1.0 ./ Ns
     orders = [log(errs[k] / errs[k+1]) / log(2) for k in 1:length(Ns)-1]
     println("N, error: ", collect(zip(Ns, errs)), "\nobserved orders: ", orders)
-    pl = plot(hs, errs, xscale = :log10, yscale = :log10, marker = :o,
-              xlabel = "h", ylabel = "Linf error of u vs N=$Nref", label = "solver")
+    pl = plot(hs, errs, xscale = :log10, yscale = :log10, marker = :o, xlabel = "h", ylabel = "Linf error of u vs N=$Nref", label = "solver")
     plot!(pl, hs, errs[1] .* (hs ./ hs[1]) .^ 2, ls = :dash, label = "order 2")
     savefig(pl, joinpath(OUT, "convergence_re$(Re).png"))
 end

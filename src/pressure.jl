@@ -33,7 +33,7 @@ end
 # Solves neglap(P) = ws.b by conjugate gradients; returns the iteration count.
 function cg!(P, ws::PressureWS, g::Grid; tol = 1e-10, maxit = 5000)
     b, r, Ap, d = ws.b, ws.r, ws.Ap, ws.d
-    b .-= sum(b) / length(b)                       # compatibility for Neumann problem
+    b .-= sum(b) / length(b)
     neglap!(Ap, P, g)
     r .= b .- Ap
     d .= r
@@ -50,22 +50,28 @@ function cg!(P, ws::PressureWS, g::Grid; tol = 1e-10, maxit = 5000)
         d .= r .+ (rs_new / rs) .* d
         rs = rs_new
     end
-    P .-= sum(P) / length(P)                       # fix the free constant
+    P .-= sum(P) / length(P)
     return k
 end
 
-# Projection: solve lap(p) = div(u*)/dt and make the velocity divergence-free.
-function project!(U, V, P, ws::PressureWS, g::Grid, dt, ulid)
+# U += c * dp/dx, V += c * dp/dy on interior faces.
+function add_pressure_gradient!(U, V, P, g::Grid, c)
     N, h = g.N, g.h
-    divergence!(ws.D, U, V, g)
-    ws.b .= .-ws.D ./ dt
-    iters = cg!(P, ws, g)
     @inbounds for j in 2:N+1, i in 2:N
-        U[i, j] -= dt * (P[i, j-1] - P[i-1, j-1]) / h
+        U[i, j] += c * (P[i, j-1] - P[i-1, j-1]) / h
     end
     @inbounds for j in 2:N, i in 2:N+1
-        V[i, j] -= dt * (P[i-1, j] - P[i-1, j-1]) / h
+        V[i, j] += c * (P[i-1, j] - P[i-1, j-1]) / h
     end
+    return nothing
+end
+
+# Solve lap(Φ) = div(u*)/dt, then u = u* - dt*grad(Φ).
+function project!(U, V, Φ, ws::PressureWS, g::Grid, dt, ulid)
+    divergence!(ws.D, U, V, g)
+    ws.b .= .-ws.D ./ dt
+    iters = cg!(Φ, ws, g)
+    add_pressure_gradient!(U, V, Φ, g, -dt)
     apply_bc!(U, V, g, ulid)
     return iters
 end
