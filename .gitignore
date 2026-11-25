@@ -2,3 +2,5 @@
 *.log
 results/*.png
 !results/.gitkeep
+/Manifest.toml
+/test/Manifest.toml
